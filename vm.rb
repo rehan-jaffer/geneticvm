@@ -40,7 +40,7 @@ class VM
           @r[r1] = @r[r2] * @r[r3]; @pc += 1;
         when 4
             @r[r1] = @r[r2] / @r[r3]; 
-            if @r[r1].nan?
+            if @r[r1].class == Float && @r[r1].nan?
               @r[r1] = MAGIC_NUMBER
             end
           @pc += 1;
@@ -58,7 +58,12 @@ class VM
         when 8
           @r[r1] = @r[r2]**2; @pc += 1
         when 9
-          @r[r1] = Math.sqrt(@r[r2]); @pc += 1
+          begin
+            @r[r1] = Math.sqrt(@r[r2]); 
+          rescue
+            @r[r1] = MAGIC_NUMBER
+          end
+            @pc += 1
         when 10
           @r[r1] = Math.sin(@r[r2]); @pc += 1
         when 11
