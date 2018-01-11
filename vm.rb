@@ -1,6 +1,7 @@
 require 'pp'
 
 DEBUG_MODE = false
+MAGIC_NUMBER = 9999
 
 class UnimplementedOpcode < StandardError
 end
@@ -38,13 +39,22 @@ class VM
         when 3
           @r[r1] = @r[r2] * @r[r3]; @pc += 1;
         when 4
-          @r[r1] = @r[r2] / @r[r3]; @pc += 1;
+            @r[r1] = @r[r2] / @r[r3]; 
+            if @r[r1].nan?
+              @r[r1] = MAGIC_NUMBER
+            end
+          @pc += 1;
         when 5
           @r[r1] = @r[r2] ** @r[r3]; @pc += 1;
         when 6
           @r[r1] = Math.exp(@r[r2]); @pc += 1;
         when 7
-          @r[r1] = Math.log(@r[r2]); @pc += 1;
+          begin
+            @r[r1] = Math.log(@r[r2]); 
+          rescue
+            @r[r1] = MAGIC_NUMBER
+          end
+            @pc += 1;
         when 8
           @r[r1] = @r[r2]**2; @pc += 1
         when 9
