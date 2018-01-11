@@ -121,7 +121,8 @@ describe VM do
 
       it "a + b * c" do
         vm = VM.new([1, 2, 3])
-        vm.load([ [], [] ])
+        vm.load([ [3, 3, 2, 1, 0], [1, 0, 3, 0, 0] ])
+        expect(vm.run[0]).to eql 7.0
       end
 
     end
