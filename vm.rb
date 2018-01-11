@@ -7,7 +7,7 @@ end
 
 class VM
   def initialize(registers=[])
-    @r = registers.map(&:to_f) + Array.new(8, 0.0)
+    @r = registers.map(&:to_f) + Array.new(16-registers.size, 0.0)
     @pc = 0
   end
 

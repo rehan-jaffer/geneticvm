@@ -117,5 +117,13 @@ describe VM do
 
     end
 
+    context "small test programs" do
+
+      it "a + b * c" do
+        vm = VM.new([1, 2, 3])
+        vm.load([ [], [] ])
+      end
+
+    end
    
 end
