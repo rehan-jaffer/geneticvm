@@ -55,15 +55,18 @@ describe VM do
       end
 
       it "RI = RJ / RK" do
-        vm = VM.new([
+        vm = VM.new([0, 4, 2])
+        vm.load([ [4, 0, 1, 2, 0] ])
+        expect(vm.run[0]).to eql 2
       end
 
       it "RI = RJ ^ RK" do
-
+        vm = VM.new([0, 2, 3])
+        vm.load([ [5, 0, 1, 2, 0] ])
+        expect(vm.run[0]).to eql 8
       end
 
       it "RI = exp(RJ)" do
-
       end
     end
 
