@@ -11,13 +11,13 @@ describe VM do
     end
 
     it "should be possible to load initial register values" do
-      expect(VM.new([1]).registers[0]).to eql 1
+      expect(VM.new([1]).registers[0]).to eql 1.0
     end
 
     it "should return the initial register values in R0 when run" do
       vm = VM.new([15])
       vm.load([ [0, 0, 0, 0] ])
-      expect(vm.run[0]).to eql 15
+      expect(vm.run[0]).to eql 15.0
     end
 
     it "should crash when given a garbage opcode" do
@@ -36,38 +36,73 @@ describe VM do
   end
 
     describe "instruction set" do
+
       it "RI = RJ + RK" do
         vm = VM.new([0, 8, 8])
         vm.load([ [1, 0, 1, 2, 0] ])
-        expect(vm.run[0]).to eql 16
+        expect(vm.run[0]).to eql 16.0
       end
 
       it "RI = RJ - RK" do
         vm = VM.new([0, 5, 3])
         vm.load([ [2, 0, 1, 2, 0] ])
-        expect(vm.run[0]).to eql 2
+        expect(vm.run[0]).to eql 2.0
       end
 
       it "RI = RJ * RK" do
         vm = VM.new([0, 2, 2])
         vm.load([ [3, 0, 1, 2, 0] ])
-        expect(vm.run[0]).to eql 4
+        expect(vm.run[0]).to eql 4.0
       end
 
       it "RI = RJ / RK" do
         vm = VM.new([0, 4, 2])
         vm.load([ [4, 0, 1, 2, 0] ])
-        expect(vm.run[0]).to eql 2
+        expect(vm.run[0]).to eql 2.0
       end
 
       it "RI = RJ ^ RK" do
         vm = VM.new([0, 2, 3])
         vm.load([ [5, 0, 1, 2, 0] ])
-        expect(vm.run[0]).to eql 8
+        expect(vm.run[0]).to eql 8.0
       end
 
       it "RI = exp(RJ)" do
+        vm = VM.new([0, 2])
+        vm.load([ [6, 0, 1, 0, 0] ])
+        expect(vm.run[0]).to eql Math.exp(2)
       end
+
+      it "RI = LN(RJ)" do
+        vm = VM.new([0, 2])
+        vm.load([ [7, 0, 1, 0, 0] ])
+        expect(vm.run[0]).to eql Math.log(2)
+      end
+
+      it "RI = RJ^2" do
+        vm = VM.new([0, 2])
+        vm.load([ [8, 0, 1, 0, 0] ])
+        expect(vm.run[0]).to eql 4.0
+      end
+
+      it "RI = sqrt(RJ)" do
+        vm = VM.new([0, 4])
+        vm.load([ [9, 0, 1, 0, 0] ])
+        expect(vm.run[0]).to eql 2.0
+      end
+
+      it "RI = Math.sin(RJ)" do
+        vm = VM.new([0, 1])
+        vm.load([ [10, 0, 1, 0, 0] ])
+        expect(vm.run[0]).to eql Math.sin(1)
+      end
+
+      it "RI = Math.cos(RJ)" do
+        vm = VM.new([0, 1])
+        vm.load([ [11, 0, 1, 0, 0] ])
+        expect(vm.run[0]).to eql Math.cos(1)
+      end
+
     end
 
    

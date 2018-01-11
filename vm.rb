@@ -7,7 +7,7 @@ end
 
 class VM
   def initialize(registers=[])
-    @r = registers + Array.new(8, 0)
+    @r = registers.map(&:to_f) + Array.new(8, 0.0)
     @pc = 0
   end
 
@@ -41,6 +41,18 @@ class VM
           @r[r1] = @r[r2] / @r[r3]; @pc += 1;
         when 5
           @r[r1] = @r[r2] ** @r[r3]; @pc += 1;
+        when 6
+          @r[r1] = Math.exp(@r[r2]); @pc += 1;
+        when 7
+          @r[r1] = Math.log(@r[r2]); @pc += 1;
+        when 8
+          @r[r1] = @r[r2]**2; @pc += 1
+        when 9
+          @r[r1] = Math.sqrt(@r[r2]); @pc += 1
+        when 10
+          @r[r1] = Math.sin(@r[r2]); @pc += 1
+        when 11
+          @r[r1] = Math.cos(@r[r2]); @pc += 1
         else
           pp instr
           raise UnimplementedOpcode
