@@ -117,6 +117,17 @@ describe VM do
 
     end
 
+    context "handling overflow/divide by zero" do
+    
+      it "returns high value on divide by zero" do
+        vm = VM.new([0, 0])
+        vm.load([ [4, 0, 1, 0, 0] ])
+        expect(vm.run[0]).to eql 9999
+      end
+
+
+    end
+
     context "small test programs" do
 
       it "a + b * c" do
