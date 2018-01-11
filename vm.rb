@@ -35,6 +35,12 @@ class VM
           puts "ADD R#{r1}, #{data}" if DEBUG_MODE
         when 2
           @r[r1] = @r[r2] - @r[r3]; @pc += 1;
+        when 3
+          @r[r1] = @r[r2] * @r[r3]; @pc += 1;
+        when 4
+          @r[r1] = @r[r2] / @r[r3]; @pc += 1;
+        when 5
+          @r[r1] = @r[r2] ** @r[r3]; @pc += 1;
         else
           pp instr
           raise UnimplementedOpcode
