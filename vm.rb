@@ -25,7 +25,7 @@ class VM
     while running
       break if @pc >= @mem.size
       instr = @mem[@pc]
-      op_code, r1, r2, r3, data = instr[0], instr[1], instr[2], instr[3], instr[4]
+      op_code, r1, r2, r3 = instr[0], instr[1], instr[2], instr[3], instr[4]
       case op_code
         when 0
           # NOOP
