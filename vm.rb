@@ -1,8 +1,8 @@
 require 'pp'
 
 DEBUG_MODE = false
-MAGIC_NUMBER = 1.0
-REG_SIZE = 16
+MAGIC_NUMBER = 99.0
+REG_SIZE = 4
 
 class UnimplementedOpcode < StandardError
 end
@@ -15,11 +15,12 @@ class VM
   end
 
   def initialize_registers(registers)
-    @r = registers.map(&:to_f) + Array.new(REG_SIZE-registers.size, -> { initial_register_value })
+    @r = registers.map(&:to_f) + Array.new(REG_SIZE-registers.size, 0) + (0..9).to_a
+#    Array.new(REG_SIZE-registers.size, -> { initial_register_value })
   end
 
   def initial_register_value
-    rand(0..3)
+    0.0
   end
 
   def ops(n)
@@ -105,6 +106,8 @@ class VM
 
     mangle_r0_if_same! # mangle r0 to a bad value if the return value is the same as the initial value
 
+    @r[0] = MAGIC_NUMBER if @r[0].class == Float && (@r[0].infinite? || @r[0].nan?)
+    @r[0] = MAGIC_NUMBER if @r[0].class == Complex
     @r
 
   end
