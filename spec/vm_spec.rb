@@ -9,7 +9,7 @@ describe VM do
     it "should return the initial register values in R0 when run" do
       vm = VM.new([15])
       vm.load([ [0, 0, 0, 0] ])
-      expect(vm.run[0]).to eql 15.0
+      expect(vm.run[0]).to eql MAGIC_NUMBER
     end
 
     it "should crash when given a garbage opcode" do
@@ -34,7 +34,7 @@ describe VM do
         it "NOOPs" do
           vm = VM.new([0, 0, 0])
           vm.load([ [0, 0, 0, 0] ])
-          expect(vm.run[0]).to eql 0
+          expect(vm.run[0]).to eql MAGIC_NUMBER
         end
 
         it "RI = RJ + RK" do
@@ -120,7 +120,7 @@ describe VM do
       it "returns high value on divide by zero" do
         vm = VM.new([0, 0])
         vm.load([ [4, 0, 1, 0, 0] ])
-        expect(vm.run[0]).to eql 9999
+        expect(vm.run[0]).to eql MAGIC_NUMBER
       end
 
 
