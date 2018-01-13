@@ -9,6 +9,6 @@ class ProgramCandidate
     }
   end
   def self.breed(p1=[], p2=[])
-    p1.slice(0, p1.size/2) + p2.slice(p2.size/2, p2.size)
+    (p1.slice(0, p1.size/2) + p2.slice(p2.size/2, p2.size))
   end
 end
