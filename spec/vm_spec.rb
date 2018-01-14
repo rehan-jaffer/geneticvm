@@ -9,7 +9,14 @@ describe VM do
     it "should return the initial register values in R0 when run" do
       vm = VM.new([15])
       vm.load([ [0, 0, 0, 0] ])
-      expect(vm.run[0]).to eql MAGIC_NUMBER
+      expect(vm.run[0]).to eql 15.0
+    end
+
+    it "should return MAGIC_NUMBER if the values in R0 are unchanged with the MANGLE_UNCHANGED_INPUT flag" do
+      vm = VM.new([15])
+      vm.load([ [0, 0, 0, 0] ])
+      vm.set_flags([MANGLE_UNCHANGED_INPUT])
+      expect(vm.run[0]).to eql 99.0    
     end
 
     it "should crash when given a garbage opcode" do
@@ -34,7 +41,7 @@ describe VM do
         it "NOOPs" do
           vm = VM.new([0, 0, 0])
           vm.load([ [0, 0, 0, 0] ])
-          expect(vm.run[0]).to eql MAGIC_NUMBER
+          expect(vm.run[0]).to eql 0.0
         end
 
         it "RI = RJ + RK" do
@@ -115,6 +122,16 @@ describe VM do
 
     end
 
+    context "conditional operators" do
+
+      it "IF (RJ > RK) THEN" do
+          vm = VM.new([1, 2, 3])
+          vm.load([ [12, 0, 2, 1], [1, 0, 1, 0], [0, 0, 0, 0] ])
+          expect(vm.run[0]).to eql 3.0
+      end
+
+    end
+  
     context "handling overflow/divide by zero" do
     
       it "returns high value on divide by zero" do
