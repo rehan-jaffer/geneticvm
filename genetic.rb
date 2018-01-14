@@ -67,8 +67,6 @@ first_gen_eval = []
     end
   }
 
-  pp children.size
-
   new_gen = (10.times.map { |_| GeneticProgram.random(rand(20)) })
   first_gen = (winners.concat(children).concat(new_gen)).map { |w| GeneticProgram.mutate(w) } 
 
