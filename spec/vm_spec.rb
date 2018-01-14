@@ -130,6 +130,12 @@ describe VM do
           expect(vm.run[0]).to eql 3.0
       end
 
+      it "(RJ < RK) THEN" do
+          vm = VM.new([2, 2, 3])
+          vm.load([ [12, 0, 1, 2], [1, 0, 1, 0], [0, 0, 0, 0] ])
+          expect(vm.run[0]).to eql 2.0
+      end
+
     end
   
     context "handling overflow/divide by zero" do
