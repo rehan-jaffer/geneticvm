@@ -2,7 +2,7 @@ require 'pp'
 
 DEBUG_MODE = false
 MAGIC_NUMBER = 99.0
-REG_SIZE = 4
+REG_SIZE = 0
 
 MANGLE_UNCHANGED_INPUT = 1000
 
@@ -31,7 +31,7 @@ class VM
   end
 
   def initialize_registers(registers)
-    @r = registers.map(&:to_f) + Array.new(REG_SIZE-registers.size, 0) + (0..9).to_a
+    @r = registers.map(&:to_f) + Array.new(REG_SIZE, 0) + (0..9).to_a
 #    Array.new(REG_SIZE-registers.size, -> { initial_register_value })
   end
 
