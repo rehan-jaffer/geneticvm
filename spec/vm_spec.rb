@@ -138,6 +138,28 @@ describe VM do
 
     end
   
+    context "nested conditional operators" do
+
+      it "IF (RJ > RK) & (RJ > RK) THEN (positive path)" do
+          vm = VM.new([1, 2, 3])
+          vm.load([ [12, 0, 2, 1], [12, 0, 1, 0], [1, 0, 1, 0], [0, 0, 0, 0] ])
+          expect(vm.run[0]).to eql 3.0
+      end
+
+      it "IF (RJ > RK) & (RJ > RK) THEN (negative path)" do
+          vm = VM.new([1, 2, 3])
+          vm.load([ [12, 0, 2, 1], [12, 0, 2, 3], [1, 0, 1, 0], [0, 0, 0, 0] ])
+          expect(vm.run[0]).not_to eql 1.0
+      end
+
+      it "IF (RJ > RK) & (RJ > RK) THEN (negative path II)" do
+          vm = VM.new([1, 2, 3])
+          vm.load([ [12, 0, 1, 2], [12, 0, 3, 2], [1, 0, 1, 0], [0, 0, 0, 0] ])
+          expect(vm.run[0]).to eql 1.0
+      end
+
+    end
+
     context "handling overflow/divide by zero" do
     
       it "returns high value on divide by zero" do
