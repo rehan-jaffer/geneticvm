@@ -28,6 +28,10 @@ class RASM
           "r#{line[1]} = Math.sin(r#{line[2]})"
         when 11
           "r#{line[1]} = Math.cos(r#{line[2]})"
+        when 12
+          "IF (r#{line[1]} > r#{line[2]})"
+        when 13
+          "IF (r#{line[1]} <= r#{line[2]})"
        end
     }
   end
