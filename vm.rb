@@ -39,6 +39,10 @@ class VM
     0.0
   end
 
+  def next_executable_instruction
+    @mem[@pc, @mem.size].zip(0..@mem.size).select { |instr| (0..11).include?(instr[0][0]) && instr[1] > @pc }.first(1)[0][1]
+  end
+
   def ops(n)
     ops = []
     ops[0] = -> (op, r1, r2, r3) { 1 }
@@ -53,9 +57,9 @@ class VM
     ops[9] = -> (op, r1, r2, r3) { @r[r1] = Math.sqrt(@r[r2]); } 
     ops[10] = -> (op, r1, r2, r3) { @r[r1] = Math.sin(@r[r2]) }
     ops[11] = -> (op, r1, r2, r3) { @r[r1] = Math.cos(@r[r2]) }
-    ops[12] = -> (op, r1, r2, r3) { (@r[r2] > @r[r3]) ? @pc += 0 : @pc += 1}
-    ops[13] = -> (op, r1, r2, r3) { (@r[r2] <= @r[r3]) ? @pc += 1 : @pc += 2}
-    ops[14] = -> (op, r1, r2, r3) { (@r[r2]) ? @pc += 1 : @pc += 2}
+    ops[12] = -> (op, r1, r2, r3) { (@r[r2] > @r[r3]) ? @pc += 0 : @pc = next_executable_instruction}
+    ops[13] = -> (op, r1, r2, r3) { (@r[r2] <= @r[r3]) ? @pc += 0 : @pc = next_executable_instruction}
+    ops[14] = -> (op, r1, r2, r3) { (@r[r2]) ? @pc += 0 : @pc = next_executable_instruction}
     ops[n]
   end
 
