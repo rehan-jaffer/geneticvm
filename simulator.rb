@@ -35,25 +35,45 @@ class Simulator
     @outputs = @inputs.map { |x| @fitness.call(x) }
   end
 
+  def generation_debug(evaluated_generation)
+
+      best_three = evaluated_generation.sort_by { |x| x[1] }.take(3).map { |x| x[1].to_i }
+
+      avg_fitness = evaluated_generation.map { |x| x[1] }.inject(:+) / evaluated_generation.size
+      avg_size = evaluated_generation.map { |x| x[0].size }.inject(:+) / evaluated.size
+
+      puts "Generation #{i}: #{avg_fitness} (avg size: #{avg_size}/#{evaluated_generation.size} #{best_three})"
+
+  end
+
   def start(generations)
+
     generations.times do |i|
+
       generation_evaluation = @generation.map { |c| e = Evaluation.new(c, @inputs, @outputs); [c, e.run]; } 
-      avg_fitness = generation_evaluation.map { |x| x[1] }.inject(:+) / @generation.size
-      puts "Generation #{i}: #{avg_fitness}"
-      top_ten = generation_evaluation.sort_by { |x| x[1] }.take(10)
+
+      top_ten = generation_evaluation.sort_by { |x| x[1] }.take(10).map { |x| x[0] }
+
       children = []
+
       top_ten.map.with_index { |g, i|
         i.upto(9) do |j|
-          children.push(ProgramCandidate.breed(g, top_ten[j][0]))
+            5.times do 
+              children.push(ProgramCandidate.breed(g, top_ten[j]))
+            end
         end
       }
-      @generation = (top_ten.map { |x| x[0] } + children).map { |w| ProgramCandidate.mutate(w) }
+
+      @generation = (top_ten + children).map { |w| ProgramCandidate.mutate(w) }
+
     end
-    pp @generation.sort_by { |x| x[1]}.take(10).map { |r| RASM.disasm(r[0]) }
+
+    pp @generation.sort_by { |x| x[1]}.take(5).map { |r| [RASM.disasm(r)] }
+
   end
 
 end
 
-sim = Simulator.new(100, -> { ProgramCandidate.random(10) })
-sim.fitness(-> (x) { Math.sin(x) + x**2 }, (0..10).to_a)
-sim.start(1000)
+#sim = Simulator.new(100, -> { ProgramCandidate.random(5) })
+#sim.fitness(-> (x) { ((x**2)+1) }, (1..5).to_a)
+#sim.start(1000)
