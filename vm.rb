@@ -31,7 +31,7 @@ class VM
   end
 
   def initialize_registers(registers)
-    @r = registers.map(&:to_f) + Array.new(REG_SIZE, 0) + (0..9).to_a
+    @r = registers.map(&:to_f) + Array.new(REG_SIZE, 0) + (0..40).to_a
 #    Array.new(REG_SIZE-registers.size, -> { initial_register_value })
   end
 
@@ -111,8 +111,14 @@ class VM
 
     running = true
     set_initial_r0
+    start_exec_timer
 
     while running
+
+      if check_exec_timer
+        @r[0] = MAGIC_NUMBER*10
+        break
+      end
 
       break if final_instruction?
 
@@ -135,9 +141,23 @@ class VM
     mangle_r0_if_same! # mangle r0 to a bad value if the return value is the same as the initial value
 
     @r[0] = MAGIC_NUMBER if @r[0].class == Float && (@r[0].infinite? || @r[0].nan?)
-    @r[0] = MAGIC_NUMBER if @r[0].class == Complex
+#    @r[0] = MAGIC_NUMBER if @r[0].class == Complex
     @r
 
+  end
+
+  def start_exec_timer
+    @start_t = Time.now
+  end
+
+  def check_exec_timer
+    cur_t = Time.now
+    total_t = (cur_t - @start_t).abs
+    return (total_t > 0.0001)
+  end
+
+  def end_exec_timer
+    @end_t = Time.now
   end
 
   def load(code)
