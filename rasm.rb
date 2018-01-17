@@ -1,6 +1,29 @@
 require 'pp'
 
 class RASM
+  def self.translate(program)
+    prelude = "int candidate(int registers[]) {\n"
+    prelude += program.map { |line|
+      case line[0]
+        when 1
+          "r[#{line[1]}] = r[#{line[2]}] + r[#{line[3]}];"
+        when 2
+          "r[#{line[1]}] = r[#{line[2]}] - r[#{line[3]}];"
+        when 3
+          "r[#{line[1]}] = r[#{line[2]}] * r[#{line[3]}];"
+        when 4
+          "r[#{line[1]}] = r[#{line[2]}] / r[#{line[3]}];"
+        when 5
+          "r[#{line[1]}] = r[#{line[2]}] ** r[#{line[3]}];"
+        when 6
+          "r[#{line[1]}] = exp(r[#{line[2]}]);"
+        when 7
+          "r[#{line[1]}] = r[#{line[2]}] * r[#{line[3]}];"
+
+      end  
+    }.join("")
+    prelude += "}\n"
+  end
   def self.disasm(program)
     program.map { |line|
       case line[0]
