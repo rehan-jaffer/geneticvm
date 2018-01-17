@@ -35,14 +35,19 @@ class Simulator
     @outputs = @inputs.map { |x| @fitness.call(x) }
   end
 
-  def generation_debug(evaluated_generation)
+  def generation_debug(n, evaluated_generation)
 
-      best_three = evaluated_generation.sort_by { |x| x[1] }.take(3).map { |x| x[1].to_i }
+      best_three = evaluated_generation.sort_by { |x| x[1] }.first(3).map { |x| x[1].to_i }
 
-      avg_fitness = evaluated_generation.map { |x| x[1] }.inject(:+) / evaluated_generation.size
-      avg_size = evaluated_generation.map { |x| x[0].size }.inject(:+) / evaluated.size
+      if best_three.include?(0)
+        pp evaluated_generation.sort_by { |x| x[1] }.first(4).map { |r| RASM.disasm(r[0]) }
+        exit
+      end
 
-      puts "Generation #{i}: #{avg_fitness} (avg size: #{avg_size}/#{evaluated_generation.size} #{best_three})"
+      avg_fitness = evaluated_generation.map { |x| x.last }.inject(:+) / evaluated_generation.size
+      avg_size = evaluated_generation.map { |x| x[0].size }.inject(:+) / evaluated_generation.size
+
+      puts "Generation #{n}: #{avg_fitness} (avg size: #{avg_size}/#{evaluated_generation.size} #{best_three})"
 
   end
 
@@ -52,19 +57,21 @@ class Simulator
 
       generation_evaluation = @generation.map { |c| e = Evaluation.new(c, @inputs, @outputs); [c, e.run]; } 
 
+      generation_debug(i, generation_evaluation)
+
       top_ten = generation_evaluation.sort_by { |x| x[1] }.take(10).map { |x| x[0] }
 
       children = []
 
       top_ten.map.with_index { |g, i|
-        i.upto(9) do |j|
-            5.times do 
+        (i+i).upto(3) do |j|
+            20.times do 
               children.push(ProgramCandidate.breed(g, top_ten[j]))
             end
         end
       }
 
-      @generation = (top_ten + children).map { |w| ProgramCandidate.mutate(w) }
+      @generation = (top_ten + children).map { |w| BasicMutator.mutate(w) }
 
     end
 
@@ -74,6 +81,6 @@ class Simulator
 
 end
 
-#sim = Simulator.new(100, -> { ProgramCandidate.random(5) })
-#sim.fitness(-> (x) { ((x**2)+1) }, (1..5).to_a)
-#sim.start(1000)
+sim = Simulator.new(400, -> { ProgramCandidate.random(rand(2..30)) })
+sim.fitness(-> (x) { (((x**2)+x)+20) }, (1..10).to_a)
+sim.start(1000)
