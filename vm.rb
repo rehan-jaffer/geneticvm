@@ -46,14 +46,14 @@ class VM
   def ops(n)
     ops = []
     ops[0] = -> (op, r1, r2, r3) { 1 }
-    ops[1] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] + @r[r3]; }
+    ops[1] = -> (op, r1, r2, r3) { @r[r1] = (@r[r2] + @r[r3]); }
     ops[2] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] - @r[r3]; }
     ops[3] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] * @r[r3]; }
     ops[4] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] / @r[r3]; }
-    ops[5] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] ** @r[r3]; }
-    ops[6] = -> (op, r1, r2, r3) { @r[r1] = Math.exp(@r[r2]) }
+    ops[5] = -> (op, r1, r2, r3) { @r[r1] = (@r[r2] ** @r[r3]); }
+    ops[6] = -> (op, r1, r2, r3) { @r[r1] = Math.exp(@r[r2]);  }
     ops[7] = -> (op, r1, r2, r3) { @r[r1] = Math.log(@r[r2]); }
-    ops[8] = -> (op, r1, r2, r3) { @r[r1] = @r[r2]**2 }
+    ops[8] = -> (op, r1, r2, r3) { @r[r1] = (@r[r2]**2);  }
     ops[9] = -> (op, r1, r2, r3) { @r[r1] = Math.sqrt(@r[r2]); } 
     ops[10] = -> (op, r1, r2, r3) { @r[r1] = Math.sin(@r[r2]) }
     ops[11] = -> (op, r1, r2, r3) { @r[r1] = Math.cos(@r[r2]) }
