@@ -2,7 +2,7 @@ require 'pp'
 
 DEBUG_MODE = false
 MAGIC_NUMBER = 99.0
-REG_SIZE = 0
+REG_SIZE = 2
 
 MANGLE_UNCHANGED_INPUT = 1000
 
@@ -11,7 +11,7 @@ end
 
 class VM
 
-  def initialize(registers=[], flags=[])
+  def initialize(registers=[], flags=[MANGLE_UNCHANGED_INPUT])
     initialize_registers(registers)
     @debug = DEBUG_MODE
     set_flags(flags)
@@ -31,7 +31,7 @@ class VM
   end
 
   def initialize_registers(registers)
-    @r = registers.map(&:to_f) + Array.new(REG_SIZE, 0) + (0..40).to_a
+    @r = registers.map(&:to_f) + Array.new(REG_SIZE, 0) + (0..255).to_a
 #    Array.new(REG_SIZE-registers.size, -> { initial_register_value })
   end
 
@@ -40,7 +40,9 @@ class VM
   end
 
   def next_executable_instruction
-    @mem[@pc, @mem.size].zip(0..@mem.size).select { |instr| (0..11).include?(instr[0][0]) && instr[1] > @pc }.first(1)[0][1]
+    @mem[@pc, @mem.size-1].zip(0..@mem.size-1)
+    .select { |instr| (0..11).include?(instr[0][0]) && instr[1] > @pc }
+    .first(1)[0][0][0]
   end
 
   def ops(n)
@@ -50,7 +52,7 @@ class VM
     ops[2] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] - @r[r3]; }
     ops[3] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] * @r[r3]; }
     ops[4] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] / @r[r3]; }
-    ops[5] = -> (op, r1, r2, r3) { @r[r1] = (@r[r2] ** @r[r3]); }
+    ops[5] = -> (op, r1, r2, r3) { @r[r1] = (@r[r2] ** @r[r3]) }
     ops[6] = -> (op, r1, r2, r3) { @r[r1] = Math.exp(@r[r2]);  }
     ops[7] = -> (op, r1, r2, r3) { @r[r1] = Math.log(@r[r2]); }
     ops[8] = -> (op, r1, r2, r3) { @r[r1] = (@r[r2]**2);  }
@@ -100,7 +102,7 @@ class VM
   end
 
   def final_instruction?
-    @pc == @mem.size
+    @pc >= @mem.size
   end
 
   def fetch
@@ -116,7 +118,7 @@ class VM
     while running
 
       if check_exec_timer
-        @r[0] = MAGIC_NUMBER*10
+        @r[0] = MAGIC_NUMBER + rand(0..99)
         break
       end
 
@@ -128,7 +130,16 @@ class VM
       begin
         ops(op_code).call(op_code, r1, r2, r3)
         debug(op_code, r1, r2, r3)
-      rescue
+      rescue TypeError => e
+#        mangle_r0! # if the result failed, return a bad value to decrease fitness score
+        @r[0] = MAGIC_NUMBER
+      rescue ZeroDivisionError => e
+#        pp [op_code, r1, r2, r3]
+#        mangle_r0! # if the result failed, return a bad value to decrease fitness score
+        @r[0] = MAGIC_NUMBER
+#         @r[0] = 65535.0
+      rescue => e
+#        pp [op_code, r1, r2, r3]
         mangle_r0! # if the result failed, return a bad value to decrease fitness score
       end
 
@@ -140,8 +151,8 @@ class VM
 
     mangle_r0_if_same! # mangle r0 to a bad value if the return value is the same as the initial value
 
-    @r[0] = MAGIC_NUMBER if @r[0].class == Float && (@r[0].infinite? || @r[0].nan?)
-#    @r[0] = MAGIC_NUMBER if @r[0].class == Complex
+    @r[0] = MAGIC_NUMBER + rand(0..99) if @r[0].class == Float && (@r[0].infinite? || @r[0].nan?)
+    @r[0] = MAGIC_NUMBER + rand(0..99) if @r[0].class == Complex
     @r
 
   end
@@ -173,7 +184,7 @@ class VM
   end
 
   def mangle_r0!
-    @r[0] = MAGIC_NUMBER
+    @r[0] = MAGIC_NUMBER + rand(0..99)
   end
 
   def mangle_r0_if_same!
