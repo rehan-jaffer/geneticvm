@@ -39,19 +39,21 @@ class Simulator
 
       best_three = evaluated_generation.sort_by { |x| x[1] }.first(3).map { |x| x[1].to_i }
 
-      if best_three.include?(0)
-        pp evaluated_generation.sort_by { |x| x[1] }.first(4).map { |r| RASM.disasm(r[0]) }
-        exit
-      end
-
       avg_fitness = evaluated_generation.map { |x| x.last }.inject(:+) / evaluated_generation.size
       avg_size = evaluated_generation.map { |x| x[0].size }.inject(:+) / evaluated_generation.size
+      avg = best_three.inject(:+)/3
 
-      puts "Generation #{n}: #{avg_fitness} (avg size: #{avg_size}/#{evaluated_generation.size} #{best_three})"
+      puts "Generation #{n}: #{avg} (avg size: #{avg_size}/#{evaluated_generation.size} #{best_three})"
 
   end
 
+  def random_candidate(candidates)
+    
+  end
+
   def start(generations)
+
+    generation_evaluation = []
 
     generations.times do |i|
 
@@ -59,28 +61,26 @@ class Simulator
 
       generation_debug(i, generation_evaluation)
 
-      top_ten = generation_evaluation.sort_by { |x| x[1] }.take(10).map { |x| x[0] }
+      top_ten_pair = generation_evaluation.sort_by { |x| x[1] }.take(5)
+      top_ten = top_ten_pair.map { |x| x[0] }
+      top_ten_scores = top_ten_pair.map { |x| x[1] }
 
       children = []
 
-      top_ten.map.with_index { |g, i|
-        (i+i).upto(3) do |j|
-            20.times do 
-              children.push(ProgramCandidate.breed(g, top_ten[j]))
-            end
+      total = top_ten_scores.inject(:+)
+      ratios = top_ten_scores.map { |score| ((score.to_f/total.to_f)*500.0).to_i }
+
+      ratios.zip(top_ten).each do |c|
+       c[0].times do |k|
+          children.push(ProgramCandidate.breed(c[1], top_ten.shuffle.first))
         end
-      }
+      end
 
       @generation = (top_ten + children).map { |w| BasicMutator.mutate(w) }
-
     end
 
-    pp @generation.sort_by { |x| x[1]}.take(5).map { |r| [RASM.disasm(r)] }
+    pp generation_evaluation.sort_by { |x| x[1]}.take(5).map { |r| [r[1], RASM.disasm(r[0])] }
 
   end
 
 end
-
-sim = Simulator.new(400, -> { ProgramCandidate.random(rand(2..30)) })
-sim.fitness(-> (x) { (((x**2)+x)+20) }, (1..10).to_a)
-sim.start(1000)
