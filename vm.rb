@@ -11,7 +11,7 @@ end
 
 class VM
 
-  def initialize(registers=[], flags=[MANGLE_UNCHANGED_INPUT])
+  def initialize(registers=[], flags=[])
     initialize_registers(registers)
     @debug = DEBUG_MODE
     set_flags(flags)
@@ -40,9 +40,11 @@ class VM
   end
 
   def next_executable_instruction
-    @mem[@pc, @mem.size-1].zip(0..@mem.size-1)
-    .select { |instr| (0..11).include?(instr[0][0]) && instr[1] > @pc }
-    .first(1)[0][0][0]
+    @mem[@pc, @mem.size].zip(0..@mem.size).select { |instr| instr[0][0] < 12 }.map { |i| i[1] }.first(1)[0]
+#    z = @mem[@pc, @mem.size].zip(0..@mem.size)
+#    .select { |instr| instr[0] }
+#    .select { |instr| (0..11).include?(instr[0][0]) && instr[1] > @pc }
+#    .first(1)[0][0][0]
   end
 
   def ops(n)
