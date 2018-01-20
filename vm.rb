@@ -22,6 +22,10 @@ class VM
     @debug = true
   end
 
+  def disasm
+    RASM.disasm(@mem)
+  end
+
   def set_flags(flags)
     @flags = flags
   end
@@ -40,7 +44,8 @@ class VM
   end
 
   def next_executable_instruction
-    return @mem[@pc, @mem.size].zip(0..@mem.size-1).select { |instr| instr[0][0] < 12 }.map { |i| i[1] }.first(1)[0] || @mem.size
+    z = @mem[@pc, @mem.size].zip(0..@mem.size-1).select { |instr| instr[0][0] < 12 }.map { |i| i[1] }.first(1)[0] + 1
+    z
 #    z = @mem[@pc, @mem.size].zip(0..@mem.size)
 #    .select { |instr| instr[0] }
 #    .select { |instr| (0..11).include?(instr[0][0]) && instr[1] > @pc }
@@ -78,28 +83,30 @@ class VM
         puts "#{@pc} r#{r1} = r#{r2} + r#{r3}"
       when 2
         puts "#{@pc} r#{r1} = r#{r2} - r#{r3}"
-      when 4
+      when 3
         puts "#{@pc} r#{r1} = r#{r2} * r#{r3}"
-      when 5
+      when 4
         puts "#{@pc} r#{r1} = r#{r2} / r#{r3}"
-      when 6
+      when 5
         puts "#{@pc} r#{r1} = r#{r2} ** r#{r3}"
-      when 7
+      when 6
         puts "#{@pc} r#{r1} = EXP(r#{r2})"
-      when 8
+      when 7
         puts "#{@pc} r#{r1} = LOG(r#{r2})"
-      when 9
+      when 8
         puts "#{@pc} r#{r1} = r#{r2} ** 2"
-      when 10
+      when 9
+        puts "#{@pc} r#{r1} = r#{r2} ^ 1/2"
+      when 9
         puts "#{@pc} r#{r1} = SIN(r#{r2})"
-      when 11
+      when 10
         puts "#{@pc} r#{r1} = COS(r#{r2})"
-      when 12        
+      when 11        
         puts "IF (R#{r2} > R#{r3})"
+      when 12
+        puts "IF (R#{r2} < R#{r3})"
       when 13
-        puts "IF (RJ < RK)"
-      when 14
-        puts "IF (RJ)"
+        puts "IF (R#{r3})"
       end
   end
 
