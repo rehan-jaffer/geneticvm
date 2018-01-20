@@ -40,7 +40,7 @@ class VM
   end
 
   def next_executable_instruction
-    @mem[@pc, @mem.size].zip(0..@mem.size).select { |instr| instr[0][0] < 12 }.map { |i| i[1] }.first(1)[0]
+    return @mem[@pc, @mem.size].zip(0..@mem.size-1).select { |instr| instr[0][0] < 12 }.map { |i| i[1] }.first(1)[0] || @mem.size
 #    z = @mem[@pc, @mem.size].zip(0..@mem.size)
 #    .select { |instr| instr[0] }
 #    .select { |instr| (0..11).include?(instr[0][0]) && instr[1] > @pc }
