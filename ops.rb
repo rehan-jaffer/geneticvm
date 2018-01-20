@@ -1,0 +1,21 @@
+NOOP = 0
+ADD = 1
+MINUS = 2
+MULTIPLY = 3 
+DIVIDE = 4
+POW = 5
+EXP = 6
+LOG = 7
+SQUARED = 8 
+SQRT = 9 
+SIN = 10
+COS = 11
+IF_GT = 12
+IF_LTE = 13
+IF_J = 14
+
+R0 = 0
+R1 = 1
+R2 = 2
+R3 = 3
+R4 = 4
