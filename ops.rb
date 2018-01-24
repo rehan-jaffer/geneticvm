@@ -13,6 +13,8 @@ COS = 11
 IF_GT = 12
 IF_LTE = 13
 IF_J = 14
+LNOT = 15
+LOR = 16
 
 R0 = 0
 R1 = 1
