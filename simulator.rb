@@ -1,6 +1,7 @@
 require './program'
 require './vm'
 require './rasm'
+require './compiler'
 require 'pp'
 
 class Evaluation
@@ -27,6 +28,10 @@ class Simulator
 
   def initialize(initial_population_size, candidate_generator, flags=[])
     @generation = initial_population_size.times.map { |_| candidate_generator.call }
+  end
+
+  def set(flag, value)
+    @settings[flag] = value
   end
 
   def fitness(f, input_range=[])
@@ -61,9 +66,14 @@ class Simulator
 
       generation_debug(i, generation_evaluation)
 
-      top_ten_pair = generation_evaluation.sort_by { |x| x[1] }.take(5)
+      top_ten_pair = generation_evaluation.sort_by { |x| x[1] }.take(10)
       top_ten = top_ten_pair.map { |x| x[0] }
       top_ten_scores = top_ten_pair.map { |x| x[1] }
+
+      if top_ten_scores.include?(0)
+        pp top_ten.map { |p| RASM.disasm(p) }
+        exit
+      end
 
       children = []
 
