@@ -1,8 +1,9 @@
 require 'pp'
+require './vm/translation'
 
 DEBUG_MODE = false
-MAGIC_NUMBER = 99.0
-REG_SIZE = 2
+MAGIC_NUMBER = 999.0
+REG_SIZE = 4
 
 MANGLE_UNCHANGED_INPUT = 1000
 
@@ -10,6 +11,8 @@ class UnimplementedOpcode < StandardError
 end
 
 class VM
+
+  include VirtualMachine::Translation
 
   def initialize(registers=[], flags=[])
     initialize_registers(registers)
@@ -22,8 +25,8 @@ class VM
     @debug = true
   end
 
-  def disasm
-    RASM.disasm(@mem)
+  def translate
+    Compiler.new(@mem).translate_rb
   end
 
   def set_flags(flags)
@@ -44,8 +47,11 @@ class VM
   end
 
   def next_executable_instruction
-    z = @mem[@pc, @mem.size].zip(0..@mem.size-1).select { |instr| instr[0][0] < 12 }.map { |i| i[1] }.first(1)[0] + 1
-    z
+    begin
+      return @mem[@pc, @mem.size].zip(0..@mem.size-1).select { |instr| instr[0][0] < 12 }.map { |i| i[1] }.first(1)[0] + 1
+    rescue
+      return @pc+1
+    end
 #    z = @mem[@pc, @mem.size].zip(0..@mem.size)
 #    .select { |instr| instr[0] }
 #    .select { |instr| (0..11).include?(instr[0][0]) && instr[1] > @pc }
@@ -58,17 +64,45 @@ class VM
     ops[1] = -> (op, r1, r2, r3) { @r[r1] = (@r[r2] + @r[r3]); }
     ops[2] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] - @r[r3]; }
     ops[3] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] * @r[r3]; }
-    ops[4] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] / @r[r3]; }
-    ops[5] = -> (op, r1, r2, r3) { @r[r1] = (@r[r2] ** @r[r3]) }
-    ops[6] = -> (op, r1, r2, r3) { @r[r1] = Math.exp(@r[r2]);  }
-    ops[7] = -> (op, r1, r2, r3) { @r[r1] = Math.log(@r[r2]); }
+    ops[4] = -> (op, r1, r2, r3) { 
+      if @r[r3] == 0
+        @r[r1] = @r[r2] + MAGIC_NUMBER
+      else
+        @r[r1] = @r[r2] / @r[r3]; 
+      end
+    }
+    ops[5] = -> (op, r1, r2, r3) { 
+      if @r[r3].abs <= 10
+        @r[r1] = (@r[r2] ** @r[r3].abs) 
+      else
+        @r[r1] = @r[r2] + MAGIC_NUMBER
+      end
+    }
+    ops[6] = -> (op, r1, r2, r3) { 
+     if @r[r2] <= 32
+       @r[r1] = Math.exp(@r[r2]);  
+     else
+       @r[r1] = @r[r2] + MAGIC_NUMBER
+     end
+    }
+    ops[7] = -> (op, r1, r2, r3) { 
+      if @r[r2] == 0
+        @r[r1] = Math.log(@r[r2]); 
+      else
+       @r[r1] = @r[r2] + MAGIC_NUMBER
+      end
+    }
     ops[8] = -> (op, r1, r2, r3) { @r[r1] = (@r[r2]**2);  }
-    ops[9] = -> (op, r1, r2, r3) { @r[r1] = Math.sqrt(@r[r2]); } 
+    ops[9] = -> (op, r1, r2, r3) { 
+      @r[r1] = Math.sqrt(@r[r2].abs); 
+    } 
     ops[10] = -> (op, r1, r2, r3) { @r[r1] = Math.sin(@r[r2]) }
     ops[11] = -> (op, r1, r2, r3) { @r[r1] = Math.cos(@r[r2]) }
     ops[12] = -> (op, r1, r2, r3) { (@r[r2] > @r[r3]) ? @pc += 0 : @pc = next_executable_instruction}
     ops[13] = -> (op, r1, r2, r3) { (@r[r2] <= @r[r3]) ? @pc += 0 : @pc = next_executable_instruction}
     ops[14] = -> (op, r1, r2, r3) { (@r[r2]) ? @pc += 0 : @pc = next_executable_instruction}
+    ops[15] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] ^ @r[r3].to_i }
+    ops[16] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] | @r[r3].to_i }
     ops[n]
   end
 
@@ -107,6 +141,14 @@ class VM
         puts "IF (R#{r2} < R#{r3})"
       when 13
         puts "IF (R#{r3})"
+      when 14
+        puts "IF (R#{r3})"
+      when 15
+        puts "R#{r1} = R#{r2} ! R#{r3}"
+      when 16
+        puts "R#{r1} = R#{r2} ^ R#{r3}"
+      else
+        puts "Invalid Opcode"
       end
   end
 
@@ -134,6 +176,7 @@ class VM
       break if final_instruction?
 
       op_code, r1, r2, r3 = fetch # fetch the next instruction from memory
+#      r1, r2, r3 = r1.abs.to_i, r2.abs.to_i, r3.abs.to_i
       instr_nil_check!([op_code, r1, r2, r3])
 
       begin
@@ -148,7 +191,13 @@ class VM
         @r[0] = MAGIC_NUMBER
 #         @r[0] = 65535.0
       rescue => e
-#        pp [op_code, r1, r2, r3]
+        pp e.message
+        pp [op_code, r1, r2, r3]
+        pp [r1, r2, r3].map { |r| @r[r] }
+        if e.message.match(/Nil/)
+          pp RASM.disasm(@mem)
+          exit
+        end
         mangle_r0! # if the result failed, return a bad value to decrease fitness score
       end
 
