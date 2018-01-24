@@ -173,6 +173,24 @@ ADD, R0, R1, R0], [NOOP, R0, R0, R0] ])
 
     end
 
+    context "boolean operators" do
+
+      it "RI = RJ ! RK", :failing do
+        vm = VM.new([0,2,3])
+        vm.enable_debug!
+        vm.load( [[LNOT, R0, R1, R2]] )
+        expect(vm.run[0]).to eq 1.0
+      end
+    
+      it "RI = RJ | RK", :failing do
+        vm = VM.new([0,2,3])
+        vm.enable_debug!
+        vm.load( [[LOR, R0, R1, R2]] )
+        expect(vm.run[0]).to eq 3.0
+      end
+
+    end
+
     context "small test programs" do
 
       it "a + b * c" do
