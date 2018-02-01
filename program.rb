@@ -1,6 +1,6 @@
 INSTRUCTION_COUNT = 15
-REGISTER_COUNT = 16
-MUTATION_FREQ = 80
+REGISTER_COUNT = 32
+MUTATION_FREQ = 50
 
 class Program
 
@@ -41,6 +41,11 @@ class BasicMutator
 
 end
 
+class BreedingFunction
+  def breed(p1, p2)
+  end
+end
+
 class ProgramCandidate
 
   def self.random(len)
@@ -55,11 +60,20 @@ class ProgramCandidate
 
    p_size = [p1.size, p2.size].sort.first
 
-   p1_c1 = rand(0..p_size)
-   p1_c2 = rand(p1_c1..p_size)
+   begin
+     p1_t = rand(0..p2.size/2)
+     p2_t = rand(p1_t..p2.size)
+     c2 = p2.slice(p1_t, (p2.size-p1_t))
+   rescue
+     puts p1_t
+     puts p2_t
+     exit
+   end
 
+   p1_c1 = rand(0..p1.size/2)
+   p1_c2 = rand(p1_c1..p1.size)
 
-   p3 = p1[0, p1_c1] + p2[p1_c1, (p1_c2-p1_c1)] + p1[p1_c2, (p1.size-p1_c1)]
+   p3 = p1[0, p1_c1] + c2 + p1[p1_c2, (p1.size-p1_c2)]
 
    p3
 #  p3 = p1.concat(p2)

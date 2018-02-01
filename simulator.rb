@@ -48,7 +48,7 @@ class Simulator
       avg_size = evaluated_generation.map { |x| x[0].size }.inject(:+) / evaluated_generation.size
       avg = best_three.inject(:+)/3
 
-      puts "Generation #{n}: #{avg} (avg size: #{avg_size}/#{evaluated_generation.size} #{best_three})"
+      puts "Generation #{n}: #{avg}/#{@max} (avg size: #{avg_size}/#{evaluated_generation.size} #{best_three})"
 
   end
 
@@ -60,13 +60,18 @@ class Simulator
 
     generation_evaluation = []
 
+    @max = @outputs.inject(:+)
+
     generations.times do |i|
 
       generation_evaluation = @generation.map { |c| e = Evaluation.new(c, @inputs, @outputs); [c, e.run]; } 
 
       generation_debug(i, generation_evaluation)
 
-      top_ten_pair = generation_evaluation.sort_by { |x| x[1] }.take(10)
+      top_ten_pair = generation_evaluation.sort_by { |x| x[1] }.keep_if { |z| z[1] < @max }
+
+      survivors = generation_evaluation.sort_by { |x| x[1] }.keep_if { |z| z[1] < @max*2 }.map { |x| x[0] }.take(300)
+
       top_ten = top_ten_pair.map { |x| x[0] }
       top_ten_scores = top_ten_pair.map { |x| x[1] }
 
@@ -78,15 +83,19 @@ class Simulator
       children = []
 
       total = top_ten_scores.inject(:+)
-      ratios = top_ten_scores.map { |score| ((score.to_f/total.to_f)*500.0).to_i }
+      ratios = top_ten_scores.map { |score| ((1.0-(score.to_f/total.to_f))*300.0 || 300.0) }
 
-      ratios.zip(top_ten).each do |c|
-       c[0].times do |k|
-          children.push(ProgramCandidate.breed(c[1], top_ten.shuffle.first))
+      (top_ten_pair).each_with_index do |c, i|
+       (10-i).times do |k|
+          children.push(ProgramCandidate.breed(c[0], top_ten.shuffle.first))
         end
       end
 
-      @generation = (top_ten + children).map { |w| BasicMutator.mutate(w) }
+      g_size = (top_ten.size + children.size + survivors.size)
+      deficit = 1000-g_size
+
+      @generation = (top_ten + children + survivors).map { |w| BasicMutator.mutate(w) }
+      @generation.concat(deficit.times.map { |_| ProgramCandidate.random(rand(4..20)) })
     end
 
     pp generation_evaluation.sort_by { |x| x[1]}.take(5).map { |r| [r[1], RASM.disasm(r[0])] }

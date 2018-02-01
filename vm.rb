@@ -2,10 +2,10 @@ require 'pp'
 require './vm/translation'
 
 DEBUG_MODE = false
-MAGIC_NUMBER = 999.0
-REG_SIZE = 4
+MAGIC_NUMBER = 99.0
+REG_SIZE = 2
 
-MANGLE_UNCHANGED_INPUT = 1000
+MANGLE_UNCHANGED_INPUT = 9000
 
 class UnimplementedOpcode < StandardError
 end
@@ -38,7 +38,7 @@ class VM
   end
 
   def initialize_registers(registers)
-    @r = registers.map(&:to_f) + Array.new(REG_SIZE, 0) + (0..255).to_a
+    @r = registers.map(&:to_f) + Array.new(REG_SIZE, 1.0) + (0..255).to_a
 #    Array.new(REG_SIZE-registers.size, -> { initial_register_value })
   end
 
@@ -96,13 +96,17 @@ class VM
     ops[9] = -> (op, r1, r2, r3) { 
       @r[r1] = Math.sqrt(@r[r2].abs); 
     } 
-    ops[10] = -> (op, r1, r2, r3) { @r[r1] = Math.sin(@r[r2]) }
-    ops[11] = -> (op, r1, r2, r3) { @r[r1] = Math.cos(@r[r2]) }
+    ops[10] = -> (op, r1, r2, r3) { 
+      @r[r1] = Math.sin(@r[r2]) 
+    }
+    ops[11] = -> (op, r1, r2, r3) { 
+      @r[r1] = Math.cos(@r[r2]) 
+    }
     ops[12] = -> (op, r1, r2, r3) { (@r[r2] > @r[r3]) ? @pc += 0 : @pc = next_executable_instruction}
     ops[13] = -> (op, r1, r2, r3) { (@r[r2] <= @r[r3]) ? @pc += 0 : @pc = next_executable_instruction}
     ops[14] = -> (op, r1, r2, r3) { (@r[r2]) ? @pc += 0 : @pc = next_executable_instruction}
-    ops[15] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] ^ @r[r3].to_i }
-    ops[16] = -> (op, r1, r2, r3) { @r[r1] = @r[r2] | @r[r3].to_i }
+    ops[15] = -> (op, r1, r2, r3) { @r[r1] = @r[r2].to_i ^ @r[r3].to_i }
+    ops[16] = -> (op, r1, r2, r3) { @r[r1] = @r[r2].to_i | @r[r3].to_i }
     ops[n]
   end
 
@@ -166,6 +170,11 @@ class VM
     set_initial_r0
     start_exec_timer
 
+    if @mem.size == 0
+      @r[0] = MAGIC_NUMBER
+      return @r
+    end
+
     while running
 
       if check_exec_timer
@@ -190,10 +199,11 @@ class VM
 #        mangle_r0! # if the result failed, return a bad value to decrease fitness score
         @r[0] = MAGIC_NUMBER
 #         @r[0] = 65535.0
-      rescue => e
-        pp e.message
-        pp [op_code, r1, r2, r3]
+      rescue RangeError => e
         pp [r1, r2, r3].map { |r| @r[r] }
+#        pp [op_code, r1, r2, r3]
+        @r[0] = MAGIC_NUMBER
+      rescue => e
         if e.message.match(/Nil/)
           pp RASM.disasm(@mem)
           exit
